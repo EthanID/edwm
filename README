@@ -5,32 +5,30 @@ edwm is a fork of dwm, an extremely fast, small, and dynamic window manager for 
 
 Patches / features
 ------------
-* actualfullscreen
-* alwayscenter
-* barpadding
-* bottomstack - layout selectable with [Alt]+[o]
-* centeredwindowname
-* combo - easily select multiple tags by holding MOD and pressing multiple tags at once
-* cropwindows - ability to crop poorly framed windows by resizing and floating them in place
-* dragmfact - resizing splits with mouse
-* exresize - resizing floating windows with keyboard
-* fibonacci - layout that is the "neofetch" of the dwm world; not practical but looks awesome
-* focusmaster - gives a "center" to your workflow by letting you quickly jump to the master client
-* fullgaps
-* horizontal grid
-* layoutmenu - rarely used but can help jog memory for layouts and is consistant with edwm being mostly mouse-compatable
-* leftstack - layout
-* mark - mark client windows like in vim
-* movestack - move clients in stack
-* scratchpad - only one scratchpad is needed: the calculator
-* pertag - stores facts on tag basis?
-* rmaster - swap each layout to have master on the right
-* stackmfact - mfact for resizing slaves
-* sticky - make a client follow you through all tags
-* swallow - replaces terminal with program it launches
-* swaptags - i3 tag swapping
-* custom urgent border - modified to use Xresources
-* warp - warps cursor to newly selected screen
+[x] actualfullscreen
+[x] alwayscenter
+[x] bottomstack - layout selectable with [Alt]+[o]
+[x] centeredwindowname
+[x] cfacts - resizing slaves
+[x] combo - easily select multiple tags by holding MOD and pressing multiple tags at once
+[x] cropwindows - ability to crop poorly framed windows by resizing and floating them in place
+[ ] exresize - resizing floating windows with keyboard
+[x] fibonacci - layout that is the "neofetch" of the dwm world; not practical but looks awesome
+[ ] focusmaster - gives a "center" to your workflow by letting you quickly jump to the master client
+[x] fullgaps
+[x] horizontal grid - layout
+[x] layoutmenu - rarely used but can help jog memory for layouts and is consistant with edwm being mostly mouse-compatable
+[ ] mark - mark client windows like in vim
+[ ] movestack - move clients in stack
+[x] namedscratchpads - most extensible scratchpads
+[ ] pertag - stores facts on tag basis?
+[x] rmaster - swap each layout to have master on the right
+[x] sticky - make a client follow you through all tags
+[x] swallow - replaces terminal with program it launches
+[x] swaptags - i3 tag swapping
+[x] warp - warps cursor to newly selected screen
+[x] resizehints = 0; No wasted space
+[x] xresources
 
 Purposefully excluded patches
 ------------
@@ -38,7 +36,7 @@ Purposefully excluded patches
 * alternativetags
 * anybar - dwm already provides a beatiful minimal statusbar that is easily scripted for
 * attachaside
-* statuspadding - statuspadding adds padding to the text inside the bar, not padding to the bar relative to the screen
+* barpadding - wastes (too much) space
 * clientopacity
 * cmdcustomize - edwm uses xresources for colors so command options are superflous
 * colorbar - is this compatible with xresources patch?
@@ -58,7 +56,7 @@ Purposefully excluded patches
 * movethrow - use case too rare
 * mpdcontrol - just bind to mpc commands
 * multikey - this sticky key functionality is worse than useless; just bind a new keybinding to a different key or with a modifier instead of hitting a key *twice*
-* namedscratchpad - only one scratchpad is neeed: the calculator
+* scratchpad
 * onlyquitonempty - this patch is being a pain compiling against the latest version; a prompt with dmenu can be prepended to the quit command to prevent mistakes
 * Pango - ttf-font-awesome works fine without it
 * restartsig - just use `ssh-agent dwm` in your .xinitrc
@@ -76,7 +74,7 @@ Purposefully excluded patches
 
 Requirements
 ------------
-In order to build dwm you need the Xlib header files.
+In order to build dwm you need the Xlib header files and XMenu (https://github.com/phillbush/xmenu).
 
 
 Installation
