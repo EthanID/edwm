@@ -1,14 +1,17 @@
 /* See LICENSE file for copyright and license details. */
 
+/* constants */
+#define TERMINAL "st"
+
 /* appearance */
-static unsigned int borderpx  = 1;        /* border pixel of windows */
+static unsigned int borderpx  = 3;        /* border pixel of windows */
 static const unsigned int gappx     = 5;        /* gaps between windows */
-static unsigned int snap      = 32;       /* snap pixel */
+static const unsigned int snap      = 32;       /* snap pixel */
+static const int showbar            = 1;        /* 0 means no bar */
+static const int topbar             = 1;        /* 0 means bottom bar */
 static const int rmaster            = 1;        /* 1 means master-area is initially on the right */
-static int showbar            = 1;        /* 0 means no bar */
-static int topbar             = 1;        /* 0 means bottom bar */
-static const char *fonts[]          = { "monospace:size=10" };
-static const char dmenufont[]       = "monospace:size=10";
+static const char *fonts[]          = { "monospace:size=12" };
+static const char dmenufont[]       = "monospace:size=12";
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#444444";
 static char normfgcolor[]           = "#bbbbbb";
@@ -21,6 +24,7 @@ static char *colors[][3] = {
        [SchemeSel]  = { selfgcolor,  selbgcolor,  selbordercolor  },
 };
 
+
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
@@ -30,15 +34,15 @@ static const Rule rules[] = {
 	 *	WM_NAME(STRING) = title
 	 */
 	/* class      instance    title       tags mask     isfloating   monitor    scratch key */
-	{ "Gimp",     NULL,       NULL,       0,            1,           -1,        0  },
-	{ "firefox",  NULL,       NULL,       1 << 8,       0,           -1,        0  },
 	{ NULL,       NULL,   "scratchpad",   0,            1,           -1,       's' },
+	{ NULL,	      "isterminal", "st",     0,            0,            0,         },
+	{ NULL,	      "isterminal", "lf",     0,            0,            0,         },
 };
 
 /* layout(s) */
-static float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
-static int nmaster     = 1;    /* number of clients in master area */
-static int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
+static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
+static const int nmaster     = 1;    /* number of clients in master area */
+static const int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
 
 #include "horizgrid.c"
 #include "fibonacci.c"
@@ -57,7 +61,7 @@ static const Layout layouts[] = {
 void swaptags(const Arg *arg);
 
 /* key definitions */
-#define MODKEY Mod1Mask
+#define MODKEY Mod4Mask
 #define TAGKEYS(KEY,TAG) \
 	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
@@ -77,64 +81,42 @@ static const char *layoutmenu_cmd = "layoutmenu.sh";
 /*First arg only serves to match against key in rules*/
 static const char *scratchpadcmd[] = {"s", "st", "-t", "scratchpad", NULL}; 
 
-/*
- * Xresources preferences to load at startup
- */
-ResourcePref resources[] = {
-		{ "normbgcolor",        STRING,  &normbgcolor },
-		{ "normbordercolor",    STRING,  &normbordercolor },
-		{ "normfgcolor",        STRING,  &normfgcolor },
-		{ "selbgcolor",         STRING,  &selbgcolor },
-		{ "selbordercolor",     STRING,  &selbordercolor },
-		{ "selfgcolor",         STRING,  &selfgcolor },
-		{ "borderpx",          	INTEGER, &borderpx },
-		{ "snap",          		INTEGER, &snap },
-		{ "showbar",          	INTEGER, &showbar },
-		{ "topbar",          	INTEGER, &topbar },
-		{ "nmaster",          	INTEGER, &nmaster },
-		{ "resizehints",       	INTEGER, &resizehints },
-		{ "mfact",      	 	FLOAT,   &mfact },
-};
-
+#include <X11/XF86keysym.h>
 static Key keys[] = {
 	/* modifier                     key        function        argument */
-	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
-	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
-	{ MODKEY,                       XK_grave,  togglescratch,  {.v = scratchpadcmd } },
+	{ MODKEY,                       XK_comma,  focusmon,       {.i = -1 } },
+	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
+
+
+
+	/* DWM BINDINGS */
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
-	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
-	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
+	{ MODKEY,                       XK_d,      incnmaster,     {.i = +1 } },
+	{ MODKEY|ShiftMask,                       XK_d,      incnmaster,     {.i = -1 } },
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
 	{ MODKEY|ShiftMask,             XK_h,      setcfact,       {.f = +0.25} },
 	{ MODKEY|ShiftMask,             XK_l,      setcfact,       {.f = -0.25} },
-	{ MODKEY|ShiftMask,             XK_o,      setcfact,       {.f =  0.00} },
 	{ MODKEY,                       XK_Return, zoom,           {0} },
 	{ MODKEY,                       XK_Tab,    view,           {0} },
-	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
-	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
-	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
-	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
-	{ MODKEY,                       XK_r,      setlayout,      {.v = &layouts[3]} },
-	{ MODKEY|ShiftMask,             XK_r,      setlayout,      {.v = &layouts[4]} },
-	{ MODKEY,                       XK_u,      setlayout,      {.v = &layouts[5]} },
-	{ MODKEY,                       XK_o,      setlayout,      {.v = &layouts[6]} },
-	{ MODKEY,                       XK_space,  setlayout,      {0} },
-	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
-	{ MODKEY,                       XK_r,      togglermaster,  {0} },
-	{ MODKEY,                       XK_s,      togglesticky,   {0} },
 	{ MODKEY|ShiftMask,             XK_f,      togglefullscr,  {0} },
+	{ MODKEY,			XK_q,      killclient,     {0} },
+// { MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
+// { MODKEY,                       XK_f,      setlayout,      {.v = &layouts[2]} },
+// { MODKEY,                       XK_y,      setlayout,      {.v = &layouts[4]} },
+// { MODKEY,                       XK_space,  setlayout,      {0} },
+	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
 	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
-	{ MODKEY,                       XK_comma,  focusmon,       {.i = -1 } },
-	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
-	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
-	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
+	// { MODKEY,                       XK_comma,  focusmon,       {.i = -1 } },
+	// { MODKEY,                       XK_period, focusmon,       {.i = +1 } },
 	{ MODKEY,                       XK_minus,  setgaps,        {.i = -1 } },
 	{ MODKEY,                       XK_equal,  setgaps,        {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_equal,  setgaps,        {.i = 0  } },
+	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
+	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)
@@ -144,7 +126,39 @@ static Key keys[] = {
 	TAGKEYS(                        XK_7,                      6)
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
+	{ MODKEY,                       XK_F5,     xrdb,           {.v = NULL } },
 	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
+	/* PROGRAM LAUNCH BINDINGS */
+	{ MODKEY,                       XK_e,	    spawn,          {.v = dmenucmd } },
+	{ MODKEY,			XK_t,	    spawn,          {.v = termcmd } },
+	{ MODKEY,                       XK_c,	    spawn,	    SHCMD("iceweasel")},
+	{ MODKEY,			XK_o,	    spawn,	    SHCMD("torbrowser-launcher")},
+	{ MODKEY,                       XK_r,	    spawn,	    SHCMD(TERMINAL " -e lf")},
+	{ MODKEY,                       XK_s,	    spawn,	    SHCMD("scrot ~/images/$(dmenu -p \"Screenshot Name:\" <&-).jpg")},
+	{ MODKEY|ShiftMask,             XK_s,	    spawn,	    SHCMD("scrot -s ~/images/$(dmenu -p \"Screenshot Name:\" <&-).jpg")},
+	{ MODKEY,                       XK_n,	    spawn,	    SHCMD(TERMINAL " -e trans de:")},
+	{ MODKEY|ShiftMask,             XK_n,	    spawn,	    SHCMD(TERMINAL " -e trans :de")},
+	{ MODKEY|ShiftMask,             XK_l,	    spawn,	    SHCMD("slock")},
+	{ MODKEY,		        XK_m,	    spawn,	    SHCMD("icedove")},
+	/* VOLUME BINDINGS */
+	{ 0,				XF86XK_AudioMicMute,    spawn,  SHCMD("pactl set-source-mute 1 toggle && pkill --signal USR1 dwm-statusbar-d")},
+	{ 0,				XF86XK_AudioMute,    spawn,  SHCMD("pactl set-sink-mute 0 toggle && pkill --signal USR1 dwm-statusbar-d")},
+	{ 0,				XF86XK_AudioLowerVolume,    spawn,  SHCMD("pactl set-sink-volume 0 -5% && pkill --signal USR1 dwm-statusbar-d")},
+	{ 0,				XF86XK_AudioRaiseVolume,    spawn,  SHCMD("pactl set-sink-volume 0 +5% && pkill --signal USR1 dwm-statusbar-d")},
+	{ 0,				XK_F9,    spawn,  SHCMD("pactl set-source-mute 1 toggle && pkill --signal USR1 dwm-statusbar-d")},
+	{ 0,				XK_F10,    spawn,  SHCMD("pactl set-sink-mute 0 toggle && pkill --signal USR1 dwm-statusbar-d")},
+	{ 0,				XK_F11,    spawn,  SHCMD("pactl set-sink-volume 0 -5% && pkill --signal USR1 dwm-statusbar-d")},
+	{ 0,				XK_F12,    spawn,  SHCMD("pactl set-sink-volume 0 +5% && pkill --signal USR1 dwm-statusbar-d")},
+	/* BRIGHTNESS BINDINGS */
+	{ MODKEY,                       XK_u,	    spawn,	    SHCMD("xbacklight -dec 10 -steps 1")},
+	{ MODKEY,                       XK_i,	    spawn,	    SHCMD("xbacklight -inc 10 -steps 1")},
+	/* EMERGENCY SHUTDOWN */
+	{ 0,				XK_F1,    spawn,  SHCMD("sudo openrc-shutdown --poweroff now")},
+	{ 0,				XK_F2,    spawn,  SHCMD("sudo openrc-shutdown --poweroff now")},
+	{ 0,				XK_F3,    spawn,  SHCMD("sudo openrc-shutdown --poweroff now")},
+	{ 0,				XK_F4,    spawn,  SHCMD("sudo openrc-shutdown --poweroff now")},
+	{ 0,				XK_F5,    spawn,  SHCMD("sudo openrc-shutdown --poweroff now")},
+	{ 0,				XK_F6,    spawn,  SHCMD("sudo openrc-shutdown --poweroff now")},
 };
 
 /* button definitions */
